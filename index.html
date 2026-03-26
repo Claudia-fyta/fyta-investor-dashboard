@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FYTA — Investor Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#1D9E75;--purple:#534AB7;--amber:#EF9F27;--text:#1a1a1a;--text-sec:#6b6b6b;--text-ter:#9a9a9a;--bg:#f8f7f5;--surface:#ffffff;--border:rgba(0,0,0,0.08);--grid:rgba(0,0,0,0.05);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
+.page{max-width:1100px;margin:0 auto;padding:48px 40px 80px;}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:56px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.logo{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;letter-spacing:-0.5px;color:var(--teal);}
+.header-meta{font-size:12px;color:var(--text-ter);text-align:right;line-height:1.6;}
+.section{margin-bottom:40px;}
+.section-label{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;color:var(--text);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.tiles{display:grid;gap:12px;margin-bottom:32px;}
+.t3{grid-template-columns:repeat(3,1fr);}
+.t4{grid-template-columns:repeat(4,1fr);}
+.t2{grid-template-columns:repeat(2,1fr);}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
+.tile-label{font-size:11px;color:var(--text-ter);margin-bottom:8px;}
+.tile-value{font-size:28px;font-weight:500;font-family:'DM Mono',monospace;letter-spacing:-1px;line-height:1;margin-bottom:6px;}
+.tile-sub{font-size:11px;color:var(--text-sec);}
+.pos{color:var(--teal);}
+.chart-block{margin-bottom:40px;}
+.chart-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.chart-source{font-size:11px;color:var(--text-ter);margin-bottom:12px;}
+.chart-wrap{position:relative;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.note{font-size:11.5px;color:var(--text-sec);padding:10px 14px;background:var(--surface);border-radius:8px;border-left:2px solid var(--amber);margin-top:12px;line-height:1.55;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.strategy-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-top:8px;}
+.strategy-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.strategy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.strategy-item-title{font-size:12px;font-weight:500;color:var(--teal);margin-bottom:6px;font-family:'DM Mono',monospace;}
+.strategy-item-text{font-size:12px;color:var(--text-sec);line-height:1.6;}
+.divider{border:none;border-top:1px solid var(--border);margin:48px 0;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <img src="data:image/png;base64,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" alt="FYTA" style="height:36px;display:block;">
+  <div><h1 style="font-size:42px;font-weight:700;color:#1a1a1a;letter-spacing:-1.5px;margin:0 0 6px 0;line-height:1;">GTM &amp; Revenue Dashboard</h1><div style="font-size:12px;color:#9a9a9a;font-family:'DM Mono',monospace;">Stand: 25. März 2026</div></div>
+</div>
+
+<div class="section">
+  <div class="section-label">Umsatz</div>
+  <div class="tiles t3">
+    <div class="tile"><div class="tile-label">Umsatz 2024</div><div class="tile-value">€594k</div><div class="tile-sub pos">+85% vs. 2023</div></div>
+    <div class="tile"><div class="tile-label">Umsatz 2025</div><div class="tile-value">€977k</div><div class="tile-sub pos">+64% vs. 2024</div></div>
+    <div class="tile"><div class="tile-label">2026 YTD (Jan–Mrz)</div><div class="tile-value">€143k</div><div class="tile-sub">ERP · Retail teilw. offen</div></div>
+  </div>
+  <div class="chart-block">
+    <div class="chart-title">Umsatzentwicklung</div>
+    <div class="chart-source">Quelle: FYTA Jahresabschlüsse &amp; ERP · 2025 vorläufig</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="c1"></canvas></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <div class="section-label">Customer Acquisition Cost</div>
+  <div class="tiles t2">
+    <div class="tile"><div class="tile-label">CAC Ø 2025</div><div class="tile-value">€85</div><div class="tile-sub">inkl. DHDL-Effekt August</div></div>
+    <div class="tile"><div class="tile-label">CAC Q1 2026</div><div class="tile-value pos">€35</div><div class="tile-sub pos">starker Rückgang</div></div>
+  </div>
+  <div class="chart-block">
+    <div class="chart-title">CAC monatlich (2024–2026)</div>
+    <div class="chart-source">Marketing Spend / Neukunden · Quelle: FYTA Jahresabschlüsse &amp; ERP</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="c2"></canvas></div>
+    <div class="note">Aug 2025: DHDL-Ausstrahlung — ~1.500 Neukunden bei €58k Spend, einmaliger CAC von €39. Organischer Baseline-CAC ohne DHDL: €80–110. Inkl. Retail-Kanal lag der gewichtete CAC 2025 bei ~€68.</div>
+  </div>
+
+  <div class="section-label" style="margin-top:40px;">Repeat Revenue Rate</div>
+  <div class="tiles t2">
+    <div class="tile"><div class="tile-label">Repeat Rev. Rate Ø 2025</div><div class="tile-value">29%</div><div class="tile-sub">Anteil Umsatz durch Bestandskunden</div></div>
+    <div class="tile"><div class="tile-label">Repeat Rev. Rate Q1 2026</div><div class="tile-value pos">44%</div><div class="tile-sub pos">starker Anstieg · Feb: 48%</div></div>
+  </div>
+  <div class="chart-block">
+    <div class="chart-title">Repeat Revenue Rate monatlich (2024–2026)</div>
+    <div class="chart-source">Quelle: FYTA Jahresabschlüsse &amp; ERP</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="c3"></canvas></div>
+    <div class="note">Aug 2025: DHDL-Effekt drückt Rate auf 10% durch Masse an Neukunden. Struktureller Trend ohne Events klar steigend.</div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<div class="section">
+  <div class="section-label">GTM Metriken — Übersicht</div>
+  <div class="tiles t4">
+    <div class="tile"><div class="tile-label">Neukunden 2023–2025</div><div class="tile-value pos">11.858</div><div class="tile-sub pos">~2× von 2024→2025</div></div>
+    <div class="tile"><div class="tile-label">Repeat Rate Q1 2026</div><div class="tile-value pos">44%</div><div class="tile-sub">Feb: 48% · Mrz: 45%</div></div>
+    <div class="tile"><div class="tile-label">CAC Q1 2026</div><div class="tile-value pos">€35</div><div class="tile-sub">Jan €23 · Feb €39 · Mrz €44</div></div>
+    <div class="tile"><div class="tile-label">MER Q1 2026</div><div class="tile-value pos">5.4×</div><div class="tile-sub">Net Rev / Marketing Spend</div></div>
+  </div>
+
+  <div class="chart-block">
+    <div class="chart-title">Kumulierte Neukunden (ERP-Kanäle)</div>
+    <div class="chart-source">Quelle: FYTA ERP · inkl. 807 Kickstarter-Backer (Apr–Mai 2025)</div>
+    <div class="chart-wrap" style="height:220px;"><canvas id="c4"></canvas></div>
+  </div>
+
+  <div class="row2">
+    <div class="chart-block">
+      <div class="chart-title">CM3-Marge</div>
+      <div class="chart-source">Nach COGS, Logistik, Returns &amp; Marketingkosten · Quelle: FYTA P&L</div>
+      <div class="chart-wrap" style="height:200px;"><canvas id="c5"></canvas></div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">MER (Marketing Efficiency Ratio)</div>
+      <div class="chart-source">Net Revenue / Marketing Spend · Quelle: FYTA P&L</div>
+      <div class="chart-wrap" style="height:200px;"><canvas id="c6"></canvas></div>
+    </div>
+  </div>
+
+  
+</div>
+
+<script>
+const T='#1D9E75',P='#534AB7',A='#EF9F27',GR='#9a9a9a',GC='rgba(0,0,0,0.05)';
+const TT={backgroundColor:'#1a1a1a',titleColor:'#fff',bodyColor:'#fff',padding:10,cornerRadius:6};
+const lL=['Jan 24','','Mrz 24','','Mai 24','','Jul 24','','Sep 24','','Nov 24','','Jan 25','','Mrz 25','','Mai 25','','Jul 25','','Sep 25','','Nov 25','','Jan 26','Feb 26','Mrz 26'];
+const ax=(fmtY,mn,mx)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT}},scales:{x:{ticks:{font:{size:9,family:'DM Mono'},color:GR,maxRotation:45},grid:{display:false},border:{display:false}},y:{min:mn,max:mx,ticks:{callback:fmtY,font:{size:10,family:'DM Mono'},color:GR},grid:{color:GC},border:{display:false}}}});
+
+new Chart(document.getElementById('c1'),{type:'bar',
+  data:{labels:['2024','2025','2026 YTD'],datasets:[{data:[594,977,143],backgroundColor:[T,P,A],borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'€'+c.raw+'k'},...TT}},
+    scales:{x:{ticks:{font:{size:13,family:'DM Mono'},color:GR},grid:{display:false},border:{display:false}},y:{max:1100,ticks:{callback:v=>'€'+v+'k',font:{size:10,family:'DM Mono'},color:GR},grid:{color:GC},border:{display:false}}}}});
+
+function mkLine(id,data,col,fmt,mn,mx,hi){
+  new Chart(document.getElementById(id),{type:'line',data:{labels:lL,datasets:[{data,borderColor:col,backgroundColor:col+'18',
+    pointBackgroundColor:data.map((_,i)=>i===hi?A:col),pointBorderColor:data.map((_,i)=>i===hi?A:col),
+    pointRadius:data.map((_,i)=>i===hi?7:3),tension:.35,fill:true,borderWidth:2}]},
+    options:{...ax(fmt,mn,mx),plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmt(c.raw)},...TT}}}});
+}
+
+mkLine('c2',[78,61,67,65,77,74,68,54,106,120,120,78,69,96,126,108,95,110,108,39,94,77,79,14,23,39,44],T,v=>'€'+Math.round(v),0,145,19);
+mkLine('c3',[20,33,25,19,25,21,32,36,32,27,25,23,22,24,35,29,35,37,26,10,25,31,38,37,38,48,45],P,v=>Math.round(v)+'%',0,58,19);
+
+const cL=['Jan 23','','','','','','','','','','','Jan 24','','','','','','','','','','Nov 24','','Jan 25','','','','','','','Aug 25','','','Nov 25','','Jan 26','','Mrz 26'];
+const cD=[96,175,231,402,598,745,903,1137,1294,1537,1753,1895,2093,2349,2687,3094,3443,3677,3863,4027,4234,4691,5124,5451,5832,6178,6429,6666,6889,7093,9400,10040,10274,10825,11186,11402,11588,11858];
+new Chart(document.getElementById('c4'),{type:'line',data:{labels:cL,datasets:[{data:cD,borderColor:T,backgroundColor:T+'15',
+  pointBackgroundColor:cD.map((_,i)=>i===30?A:T),pointBorderColor:cD.map((_,i)=>i===30?A:T),
+  pointRadius:cD.map((_,i)=>i===30?7:2),tension:.35,fill:true,borderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>Math.round(c.raw).toLocaleString('de-DE')+' NC'},...TT}},
+    scales:{x:{ticks:{font:{size:9,family:'DM Mono'},color:GR,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v,font:{size:10,family:'DM Mono'},color:GR},grid:{color:GC},border:{display:false}}}}});
+
+const cm2=[62,62,57,60,57,57,55,57,57,57,52,59,57,60,65,65,62,62,57,52,60,61,71,63,60,63,61];
+new Chart(document.getElementById('c5'),{type:'bar',data:{labels:lL,datasets:[{data:cm2,backgroundColor:cm2.map(v=>v<57?A+'cc':T+'cc'),borderRadius:3,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>Math.round(c.raw)+'%'},...TT}},
+    scales:{x:{ticks:{font:{size:8,family:'DM Mono'},color:GR,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{min:48,max:78,ticks:{callback:v=>v+'%',font:{size:10,family:'DM Mono'},color:GR},grid:{color:GC},border:{display:false}}}}});
+
+const mer=[1.76,2.27,2.16,2.25,2.02,1.94,2.62,3.18,1.58,1.29,1.40,1.88,2.14,1.83,1.31,1.49,1.73,1.54,1.22,2.92,1.50,1.82,1.94,10.43,6.46,5.54,4.20];
+new Chart(document.getElementById('c6'),{type:'bar',data:{labels:lL,datasets:[{data:mer,backgroundColor:mer.map((_,i)=>i>=23?A+'cc':P+'aa'),borderRadius:3,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.toFixed(1)+'×'},...TT}},
+    scales:{x:{ticks:{font:{size:8,family:'DM Mono'},color:GR,maxRotation:45},grid:{display:false},border:{display:false}},
+      y:{ticks:{callback:v=>v+'×',font:{size:10,family:'DM Mono'},color:GR},grid:{color:GC},border:{display:false}}}}});
+</script>
+
+  
+  <hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:48px 0;">
+
+  <div class="section">
+    <div class="section-label">Ausblick 2026 — Pfad zu €3M</div>
+
+    <!-- 4 Säulen Übersicht -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:40px;">
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;border-top:3px solid #1D9E75;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#1D9E75;margin-bottom:8px;">01 — D2C</div>
+        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">€1.34M</div>
+        <div style="font-size:11px;color:#6b6b6b;">Online-Direktvertrieb, SEO & Influencer</div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;border-top:3px solid #1D9E75;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#1D9E75;margin-bottom:8px;">02 — Stationärer Handel</div>
+        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">€733k</div>
+        <div style="font-size:11px;color:#6b6b6b;">100 Displays Hornbach + Bauhaus</div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;border-top:3px solid #534AB7;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#534AB7;margin-bottom:8px;">03 — Marketplace</div>
+        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">€197k</div>
+        <div style="font-size:11px;color:#6b6b6b;">AMZ + In-App Marketplace (Aufbau)</div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;border-top:3px solid #EF9F27;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#EF9F27;margin-bottom:8px;">04 — B2B</div>
+        <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">€808k</div>
+        <div style="font-size:11px;color:#6b6b6b;">Hardware + Subscription, 60 Kunden</div>
+      </div>
+    </div>
+
+    <!-- WATERFALL CHART -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:24px 28px;margin-bottom:24px;">
+      <div style="font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">Revenue-Aufbau 2026</div>
+      <div style="font-size:11px;color:#9a9a9a;margin-bottom:20px;">Aus Finanzmodell · Alle Kanäle</div>
+      <div style="position:relative;height:260px;"><canvas id="cWaterfall"></canvas></div>
+    </div>
+
+    <!-- 00: D2C -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:28px 32px;margin-bottom:20px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#1D9E75;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(0,0,0,0.06);">01 — D2C Online</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Gleiche Wachstumsrate, niedrigerer CAC</div>
+          <div style="font-size:12px;color:#6b6b6b;line-height:1.7;">
+            FYTA wächst im D2C-Kanal mit der gleichen Rate wie 2024→2025 (~1.8×) — bei einem strukturell niedrigeren CAC-Ziel von €36 (vs. €85 in 2025). Die angesetzte Repeat Rate von 38% liegt bewusst unter dem aktuellen Q1-2026-Wert von 44% — um die Projektion bewusst vorsichtig zu halten.<br><br>
+            Drei organische Hebel: SEO — FYTA produziert bereits heute viel Pflanzenpflege-Content; 2026 wird dieser technisch optimiert, strukturiert und gezielt für Suchmaschinen ausgebaut. Nicht mehr Inhalt, sondern mehr Effizienz. Dazu eine Geo-Strategie für regionale Suchanfragen, und Influencer Marketing mit klarem ROI-Filter statt Reichweiten-Logik.
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:12px;">D2C Hochrechnung 2026</div>
+          <div style="background:rgba(29,158,117,0.04);border-radius:8px;padding:14px 16px;margin-bottom:12px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+              <div>
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Neukunden Ziel</div>
+                <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#1a1a1a;">17.600</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">CAC Ziel</div>
+                <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#1D9E75;">€36</div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Repeat Rate</div>
+                <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#1D9E75;">38%</div>
+              </div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,0.07);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <tr style="background:rgba(0,0,0,0.02);">
+                <td style="padding:7px 10px;color:#9a9a9a;">Hardware Erstkauf</td>
+                <td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;color:#1a1a1a;">€974k</td>
+              </tr>
+              <tr style="border-top:1px solid rgba(0,0,0,0.05);">
+                <td style="padding:7px 10px;color:#9a9a9a;">Repeat Sales (38%)</td>
+                <td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;color:#1a1a1a;">€370k</td>
+              </tr>
+              <tr style="border-top:1px solid rgba(0,0,0,0.07);background:rgba(29,158,117,0.05);">
+                <td style="padding:8px 10px;font-weight:500;color:#1a1a1a;">D2C Gesamt</td>
+                <td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;color:#1D9E75;">€1.344k</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 01: Retail -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:28px 32px;margin-bottom:20px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#1D9E75;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(0,0,0,0.06);">02 — Stationärer Handel</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Reichweite ohne proportionalen Spend</div>
+          <div style="font-size:12px;color:#6b6b6b;line-height:1.7;">
+            Ab Ende April 2026 startet der Rollout in 25 Hornbach & Bauhaus Märkten — danach alle 2 Monate weitere 25 Displays bis zum Ziel von 100. Der stationäre Handel adressiert kaufbereite Kunden mit Pflanzen in der Hand, ohne bezahlten Media-Spend.
+          </div>
+          <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:rgba(29,158,117,0.06);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Umsatz / Display / Jahr</div>
+              <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:#1a1a1a;">€17.692</div>
+              <div style="font-size:10px;color:#9a9a9a;margin-top:2px;">4× Drehung · 45% Marge</div>
+            </div>
+            <div style="background:rgba(29,158,117,0.06);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Vollausbau Jahresrate</div>
+              <div style="font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:#1D9E75;">€1.77M</div>
+              <div style="font-size:10px;color:#9a9a9a;margin-top:2px;">100 Displays × €17.692</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:12px;">Rollout & Umsatzbeitrag 2026</div>
+          <div style="border:1px solid rgba(0,0,0,0.07);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead>
+                <tr style="background:rgba(0,0,0,0.03);">
+                  <th style="text-align:left;padding:7px 10px;color:#9a9a9a;font-weight:400;">Zeitpunkt</th>
+                  <th style="text-align:center;padding:7px 10px;color:#9a9a9a;font-weight:400;">Displays</th>
+                  <th style="text-align:right;padding:7px 10px;color:#9a9a9a;font-weight:400;">Kum. Umsatz 2026</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">Ende April</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">25</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€293k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">Ende Juni</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">50</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€513k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">Ende August</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">75</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€660k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">Ende Oktober</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">100</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€733k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.07);background:rgba(29,158,117,0.05);"><td style="padding:8px 10px;font-weight:500;color:#1a1a1a;">Retail gesamt 2026</td><td style="padding:8px 10px;text-align:center;"></td><td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;color:#1D9E75;">~€733k</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02: Marktplatz -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:28px 32px;margin-bottom:20px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#534AB7;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(0,0,0,0.06);">03 — Marketplace</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Zwei Kanäle, ein Prinzip: CAC = €0</div>
+          <div style="font-size:12px;color:#6b6b6b;line-height:1.7;">
+            <strong style="font-weight:500;color:#1a1a1a;">Amazon & externe Marktplätze</strong> bleiben ein wichtiger Hardware-Kanal (€173k geplant). Keine eigene Akquise nötig, hohe Sichtbarkeit bei Kaufintent.<br><br>
+            <strong style="font-weight:500;color:#1a1a1a;">In-App Marketplace</strong>: Launch Jun/Jul 2026. Partner-Produkte — Samen, Erde, Dünger, Nematoden, Töpfe, Grow-Tech, Gartenlifestyle. FYTA erhält 20% Kommission. Der entscheidende Vorteil: Sensor-Daten erzeugen Intent-basierte Kaufempfehlungen — kein anderer Marktplatz weiß, dass deine Pflanze gerade Dünger braucht. Mit 25 Sessions pro Monat à 1m46s Ø Dauer — über dem E-Commerce-Benchmark von ~92s — zeigt die Plattform bereits kaufverhaltenstaugliches Engagement.
+          </div>
+          <div style="margin-top:16px;">
+            <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:8px;">Business Model</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0;">
+              <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Amazon & Ext. Marktplätze</div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:#1a1a1a;">Hardware-Verkauf</div>
+                <div style="font-size:10px;color:#6b6b6b;margin-top:3px;">FYTA verkauft direkt · keine Kommission</div>
+              </div>
+              <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">In-App Marketplace</div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:#534AB7;">20% Kommission</div>
+                <div style="font-size:10px;color:#6b6b6b;margin-top:3px;">auf Partner-GMV · keine eigenen Lagerkosten</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;font-size:11px;color:#9a9a9a;padding:10px 12px;background:rgba(83,74,183,0.05);border-radius:8px;line-height:1.6;">
+            2026 ist Aufbau: Partner-Onboarding, erste Conversion-Learnings. Der Skalierungshebel liegt in 2027 — laut Finanzmodell €466k Kommission bei 1,5% Conversion.
+          </div>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Business Model</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+            <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Amazon & ext. Marktplätze</div>
+              <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:#1a1a1a;">Hardware-Verkauf</div>
+              <div style="font-size:10px;color:#6b6b6b;margin-top:3px;">Einmaliger Kaufpreis, FYTA erhält Handelsmarge</div>
+            </div>
+            <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">In-App Marketplace</div>
+              <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:#534AB7;">20% Kommission</div>
+              <div style="font-size:10px;color:#6b6b6b;margin-top:3px;">Auf Partner-Umsatz (Samen, Erde, Dünger, Töpfe…)</div>
+            </div>
+          </div>
+
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Warum der Marktplatz funktioniert</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#534AB7;margin-bottom:4px;">36.267</div>
+              <div style="font-size:10px;color:#6b6b6b;line-height:1.4;">vernetzte Pflanzen — Echtzeit-Bedarf bekannt</div>
+            </div>
+            <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#534AB7;margin-bottom:4px;">25 Sessions</div>
+              <div style="font-size:10px;color:#6b6b6b;line-height:1.4;">/ Monat · je 1m46s vs. ~92s E-Commerce Benchmark</div>
+            </div>
+            <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#534AB7;margin-bottom:4px;">~8.000</div>
+              <div style="font-size:10px;color:#6b6b6b;line-height:1.4;">MAU Q1 2026 — aktive, engagierte Nutzer</div>
+            </div>
+            <div style="background:rgba(83,74,183,0.05);border-radius:8px;padding:12px 14px;">
+              <div style="font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:#534AB7;margin-bottom:4px;">72%</div>
+              <div style="font-size:10px;color:#6b6b6b;line-height:1.4;">WAU/MAU — Top-Quartil Consumer IoT</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,0.07);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <tr style="background:rgba(0,0,0,0.02);"><td style="padding:7px 10px;color:#9a9a9a;">Amazon & Ext. Marktplätze</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;color:#1a1a1a;">€173k</td></tr>
+              <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#9a9a9a;">In-App Marketplace (20% Komm.)</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;color:#1a1a1a;">€24k</td></tr>
+              <tr style="border-top:1px solid rgba(0,0,0,0.07);background:rgba(83,74,183,0.05);"><td style="padding:8px 10px;font-weight:500;color:#1a1a1a;">Marketplace gesamt 2026</td><td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;color:#534AB7;">€197k</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03: B2B -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:28px 32px;margin-bottom:24px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#EF9F27;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(0,0,0,0.06);">04 — B2B</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:10px;">Validierung des B2B-Potenzials</div>
+          <div style="font-size:12px;color:#6b6b6b;line-height:1.7;">
+            122 Unternehmen arbeiten bereits heute mit FYTA-Hardware — von Universitäten über Naturalisierungsprojekte bis hin zu SME-Betrieben und Objektbegrünern. Ab April 2026 werden diese auf die B2B Subscription-App ongeboardet. Das primäre Ziel: den Customer Lifetime Value je Segment validieren. Fachkongresse (u.a. Internationaler Kongress der Begrüner) dienen als weiterer Akquise-Kanal.
+          </div>
+
+          <div style="margin-top:16px;">
+            <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:8px;">Business Model</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="background:rgba(239,159,39,0.06);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Hardware (einmalig)</div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:#1a1a1a;">Setup + Sensoren</div>
+                <div style="font-size:10px;color:#6b6b6b;margin-top:3px;">Je nach Paketgröße</div>
+              </div>
+              <div style="background:rgba(239,159,39,0.06);border-radius:8px;padding:12px 14px;">
+                <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Basis-Abo (monatlich)</div>
+                <div style="font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:#EF9F27;">€10 / Monat</div>
+                <div style="font-size:10px;color:#6b6b6b;margin-top:3px;">bis 10 Sensoren inkl. · danach €1/Sensor</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px;">
+            <div style="font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:8px;">Sehr niedrige Einstiegshürde</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(239,159,39,0.06);border-radius:8px;">
+                <div style="font-family:'DM Mono',monospace;font-size:11px;color:#EF9F27;white-space:nowrap;margin-top:1px;">FYTA</div>
+                <div style="font-size:11px;color:#6b6b6b;line-height:1.55;">Testpaket direkt über die Website kaufen (€120–230, 35% Rabatt). 3 Monate Abo gratis. Sofort loslegen — kein Salesgespräch, keine Demo-Schleife.</div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.02);border-radius:8px;">
+                <div style="font-family:'DM Mono',monospace;font-size:11px;color:#9a9a9a;white-space:nowrap;margin-top:1px;">Markt</div>
+                <div style="font-size:11px;color:#9a9a9a;line-height:1.55;">Kontaktformular → Demo-Pitch → Verkaufsgespräch → erst dann Preisinformation. Wochenlanger Prozess, bevor ein Kauf möglich ist.</div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:12px;">B2B Segmente & Hochrechnung 2026</div>
+          <div style="border:1px solid rgba(0,0,0,0.07);border-radius:8px;overflow:hidden;margin-bottom:10px;">
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead>
+                <tr style="background:rgba(0,0,0,0.03);">
+                  <th style="text-align:left;padding:7px 10px;color:#9a9a9a;font-weight:400;">Segment</th>
+                  <th style="text-align:center;padding:7px 10px;color:#9a9a9a;font-weight:400;">Kunden</th>
+                  <th style="text-align:right;padding:7px 10px;color:#9a9a9a;font-weight:400;">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">Greenery Businesses</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">50</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€765k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">Orchard / Wineries</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">5</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€25k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.05);"><td style="padding:7px 10px;color:#6b6b6b;">SMB Greenhouse Ops</td><td style="padding:7px 10px;text-align:center;font-family:'DM Mono',monospace;">5</td><td style="padding:7px 10px;text-align:right;font-family:'DM Mono',monospace;">€18k</td></tr>
+                <tr style="border-top:1px solid rgba(0,0,0,0.07);background:rgba(239,159,39,0.06);"><td style="padding:8px 10px;font-weight:500;color:#1a1a1a;">B2B gesamt 2026</td><td style="padding:8px 10px;text-align:center;font-family:'DM Mono',monospace;font-weight:500;">60</td><td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-weight:500;color:#EF9F27;">€808k</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:rgba(239,159,39,0.06);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">davon Hardware</div>
+              <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#1a1a1a;">€714k</div>
+            </div>
+            <div style="background:rgba(239,159,39,0.06);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">davon Subscription</div>
+              <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:#EF9F27;">€94k</div>
+            </div>
+            <div style="background:rgba(239,159,39,0.06);border-radius:8px;padding:12px 14px;">
+              <div style="font-size:10px;color:#9a9a9a;margin-bottom:4px;">Zum Launch</div>
+              <div style="font-size:11px;color:#6b6b6b;line-height:1.5;margin-top:2px;">Dedizierte B2B-Webseite · SEO-optimiert für Begrünung &amp; Smart Farming</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#9a9a9a;margin-top:8px;line-height:1.5;">Adressierbarer EU-Markt: 229k Greenery Businesses + 1,5M Orchard/Wineries + 800k Greenhouse Operations</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOTAL -->
+    <div style="background:#1a1a1a;border-radius:12px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Projektion Gesamtumsatz 2026</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.6;">D2C €1.344k + Retail €733k + Marketplace €197k + B2B €808k</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'DM Mono',monospace;font-size:36px;font-weight:500;color:#1D9E75;">€3,08M</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;">Aus Finanzmodell · Stand März 2026</div>
+      </div>
+    </div>
+
+  </div>
+
+
+
+
+<script>
+// Waterfall chart for €3M path
+new Chart(document.getElementById('cWaterfall'), {
+  type: 'bar',
+  data: {
+    labels: ['D2C', 'Retail', 'Marketplace', 'B2B', 'Total'],
+    datasets: [{
+      data: [1344, 733, 197, 808, 3082],
+      backgroundColor: ['#1D9E75','#1D9E75','#534AB7','#EF9F27','#1a1a1a'],
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: c => '€' + c.raw + 'k' },
+        backgroundColor: '#1a1a1a', titleColor: '#fff', bodyColor: '#fff', padding: 10, cornerRadius: 6 }
+    },
+    scales: {
+      x: { ticks: { font: { size: 12, family: 'DM Mono' }, color: '#9a9a9a' }, grid: { display: false }, border: { display: false } },
+      y: { max: 3400, ticks: { callback: v => '€' + v + 'k', font: { size: 10, family: 'DM Mono' }, color: '#9a9a9a' }, grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false } }
+    }
+  }
+});
+</script>
+
+
+
+  <hr style="border:none;border-top:1px solid rgba(0,0,0,0.08);margin:16px 0;">
+
+  <div class="section" style="margin-bottom:32px;">
+    <div class="section-label">Wachstumspotenzial 2026–2029</div>
+
+    <!-- Intro -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:24px 32px;margin-bottom:24px;">
+      <div style="font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:12px;">Intro ins Finanzmodell</div>
+      <div style="font-size:12px;color:#6b6b6b;line-height:1.8;margin-bottom:20px;">
+        Auf Basis der validierten 2025-Metriken und der vier Wachstumskanäle wird der zukünftige Umsatz von FYTA wie folgt projiziert. Die Projektion basiert auf validierten Kernannahmen — das tatsächliche Potenzial liegt darüber, insbesondere wenn Enterprise-Deals und Datenprodukte hinzukommen.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+        <div style="padding:10px 14px;background:rgba(29,158,117,0.04);border-radius:8px;border-left:2px solid #1D9E75;">
+          <div style="font-size:11px;font-weight:500;color:#1a1a1a;margin-bottom:3px;">D2C &amp; Marketplace</div>
+          <div style="font-size:11px;color:#6b6b6b;line-height:1.5;">Lineares Wachstum entlang des historischen Trends</div>
+        </div>
+        <div style="padding:10px 14px;background:rgba(29,158,117,0.04);border-radius:8px;border-left:2px solid #1D9E75;">
+          <div style="font-size:11px;font-weight:500;color:#1a1a1a;margin-bottom:3px;">Retail</div>
+          <div style="font-size:11px;color:#6b6b6b;line-height:1.5;">Kontinuierlicher Roll-out in weiteren Retail-Standorten — national und zunehmend international</div>
+        </div>
+        <div style="padding:10px 14px;background:rgba(83,74,183,0.04);border-radius:8px;border-left:2px solid #534AB7;">
+          <div style="font-size:11px;font-weight:500;color:#1a1a1a;margin-bottom:3px;">In-App Marketplace</div>
+          <div style="font-size:11px;color:#6b6b6b;line-height:1.5;">Wachsende Einnahmen mit zunehmender Nutzerbasis · Conversion-Rate-Steigerung durch Personalisierung</div>
+        </div>
+        <div style="padding:10px 14px;background:rgba(239,159,39,0.04);border-radius:8px;border-left:2px solid #EF9F27;">
+          <div style="font-size:11px;font-weight:500;color:#1a1a1a;margin-bottom:3px;">B2B</div>
+          <div style="font-size:11px;color:#6b6b6b;line-height:1.5;">Nach Validierung 2026: ~3× Kundenwachstum p.a.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:24px 28px;margin-bottom:24px;">
+      <div style="font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">Umsatzprojektion 2026–2029</div>
+      <div style="font-size:11px;color:#9a9a9a;margin-bottom:6px;">Aus Finanzmodell · Basisannahmen · Enterprise/APIaaS nicht enthalten</div>
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6b6b;"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75;display:inline-block;"></span>B2C (D2C + Retail + Marketplace)</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6b6b;"><span style="width:10px;height:10px;border-radius:2px;background:#EF9F27;display:inline-block;"></span>B2B</span>
+      </div>
+      <div style="position:relative;height:280px;"><canvas id="cGrowth"></canvas></div>
+    </div>
+
+    <!-- Revenue mix 100% stacked chart -->
+    <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:24px 28px;margin-bottom:24px;">
+      <div style="font-size:13px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">Revenue-Mix nach Stream</div>
+      <div style="font-size:11px;color:#9a9a9a;margin-bottom:16px;">Anteil am Gesamtumsatz · Aus Finanzmodell · Enterprise/APIaaS nicht enthalten</div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6b6b;"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75;display:inline-block;"></span>Hardware B2C</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6b6b;"><span style="width:10px;height:10px;border-radius:2px;background:#9FE1CB;display:inline-block;"></span>In-App Marketplace</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6b6b;"><span style="width:10px;height:10px;border-radius:2px;background:#EF9F27;display:inline-block;"></span>B2B Hardware</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b6b6b;"><span style="width:10px;height:10px;border-radius:2px;background:#FAC775;display:inline-block;"></span>B2B Subscription</span>
+      </div>
+      <div style="position:relative;height:200px;"><canvas id="cMix"></canvas></div>
+    </div>
+
+    <!-- Milestone tiles -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:32px;">
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#9a9a9a;margin-bottom:8px;letter-spacing:.05em;">2026</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#1D9E75;margin-bottom:4px;">€3,0M</div>
+        <div style="font-size:11px;color:#6b6b6b;">Basisjahr · Kanalvalidierung</div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#9a9a9a;margin-bottom:8px;letter-spacing:.05em;">2027</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#1D9E75;margin-bottom:4px;">€8,1M</div>
+        <div style="font-size:11px;color:#6b6b6b;">Marktplatz skaliert · B2B wächst 3×</div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#9a9a9a;margin-bottom:8px;letter-spacing:.05em;">2028</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">€23,0M</div>
+        <div style="font-size:11px;color:#6b6b6b;">Retail dominant · In-App €2,5M</div>
+      </div>
+      <div style="background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:18px 20px;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:#9a9a9a;margin-bottom:8px;letter-spacing:.05em;">2029</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#1a1a1a;margin-bottom:4px;">€68,5M</div>
+        <div style="font-size:11px;color:#6b6b6b;">Vollskalierung aller Kanäle</div>
+      </div>
+    </div>
+
+    <!-- Beyond the Model -->
+    <div style="background:#1a1a1a;border-radius:12px;padding:28px 32px;margin-bottom:20px;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;">Beyond the Model — nicht modelliertes Potenzial</div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:20px;">Die Projektion oben ist das Basisszenario. Zwei zusätzliche Opportunitäten sind im Modell bewusst nicht enthalten — sie könnten den Wachstumspfad erheblich beschleunigen, wenn sie eintreten.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+
+        <!-- Tile 1: Husqvarna-Typ -->
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:20px 22px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:#1D9E75;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">Consumer Integrationspartner</div>
+          <div style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.8);margin-bottom:4px;">Husqvarna / Gardena-Typ</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;">Umsatz: €4,6 Mrd. / Jahr</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;margin-bottom:14px;">
+            Integration mit Bewässerungscomputern und Rasenrobotern. FYTA liefert bessere Analysen und Engagement für deren Endkunden — der Partner bringt Vertriebsreach und Millionen von Geräten im Feld. Gegenseitiger Up-Sell über den FYTA-Marktplatz. Zusätzlich: Datenprodukte über das Kundenverhalten.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Revenue-Typ</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.65);">HW + API + Sub-Share</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Potenzial / Jahr</div>
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:#1D9E75;">€1–5M+</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.25);">Nicht modelliert · Win-Win durch Vertriebspartnerschaft</div>
+        </div>
+
+        <!-- Tile 2: idverde-Typ -->
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:20px 22px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:#534AB7;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">Enterprise B2B</div>
+          <div style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.8);margin-bottom:4px;">idverde-Typ</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;">Umsatz: €1 Mrd. / Jahr</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;margin-bottom:14px;">
+            Professionelle Begrüner und Facility-Manager (idverde: EU-weit, 20.000+ Mitarbeitende) erhalten eine customized Solution — FYTAs Hardware und Datenmodell, white-labelled oder tief integriert. Zentrales Dashboard für tausende verwaltete Pflanzen, automatische Alerts, Reporting für Auftraggeber.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+            <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Revenue-Typ</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.65);">HW (Volumen) + SaaS</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:6px;padding:8px 10px;">
+              <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:3px;">Potenzial / Deal</div>
+              <div style="font-family:'DM Mono',monospace;font-size:13px;color:#534AB7;">€2M + €500k/Jahr</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.25);">Nicht modelliert · erfordert Enterprise Sales Prozess</div>
+        </div>
+
+        <!-- Tile 3: Data & Intelligence -->
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:20px 22px;border:1px solid rgba(255,255,255,0.08);">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:#EF9F27;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">Data &amp; Intelligence</div>
+          <div style="font-size:11px;font-weight:500;color:rgba(255,255,255,0.8);margin-bottom:8px;">Das Datennetz wächst mit</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;margin-bottom:16px;">
+            Mit 100.000 Sensoren Ende 2026 generiert FYTA täglich ~17 Milliarden Datenpunkte aus Böden und Pflanzen quer durch Europa — pH, Feuchtigkeit, Licht, Temperatur, auf Mikro-Standort-Ebene. Bei 1 Million Sensoren entspricht das 170 Milliarden Datenpunkte pro Tag.
+          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.45);line-height:1.65;margin-bottom:14px;">
+            Dieses Datennetz kann langfristig als eigenständiges Produkt vermarktet werden — an Drohnen-Betreiber, Agrar-Forscher, Klimamodellierung, Versicherungen oder Smart-City-Projekte, die alle von flächendeckenden Echtzeit-Bodendaten profitieren.
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
+            <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.05em;text-transform:uppercase;">Ziel 2030</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+              <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#EF9F27;">1 Mio.</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.45);">Live Sensoren</div>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;">
+              <div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#EF9F27;">170 Mrd.</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.45);">Datenpunkte / Tag</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.25);">Noch nicht modelliert · strategische Option 3–5 Jahre</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Closing note -->
+    <div style="text-align:center;padding:20px;font-size:12px;color:#9a9a9a;line-height:1.6;">
+      Detailliertes Finanzmodell mit vollständiger Herleitung aller Annahmen im Datenraum verfügbar.
+    </div>
+
+  </div>
+
+<script>
+new Chart(document.getElementById('cGrowth'), {
+  type: 'bar',
+  data: {
+    labels: ['2026', '2027', '2028', '2029'],
+    datasets: [
+      {
+        label: 'B2C',
+        data: [2223, 5143, 13816, 40772],
+        backgroundColor: '#1D9E75',
+        borderRadius: 4,
+        borderSkipped: false,
+        stack: 'total'
+      },
+      {
+        label: 'B2B',
+        data: [808, 2935, 9139, 27752],
+        backgroundColor: '#EF9F27',
+        borderRadius: 4,
+        borderSkipped: false,
+        stack: 'total'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => c.dataset.label + ': €' + (c.raw/1000).toFixed(1) + 'M',
+          footer: items => 'Total: €' + (items.reduce((a,b) => a + b.raw, 0)/1000).toFixed(1) + 'M'
+        },
+        backgroundColor: '#1a1a1a', titleColor: '#fff', bodyColor: '#aaa', footerColor: '#fff', padding: 12, cornerRadius: 6
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        ticks: { font: { size: 13, family: 'DM Mono' }, color: '#9a9a9a' },
+        grid: { display: false }, border: { display: false }
+      },
+      y: {
+        stacked: true,
+        ticks: { callback: v => '€' + (v/1000).toFixed(0) + 'M', font: { size: 10, family: 'DM Mono' }, color: '#9a9a9a' },
+        grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false }
+      }
+    }
+  }
+});
+</script>
+
+
+<script>
+// Revenue Mix 100% stacked bar chart
+// Data in thousands
+// Percentages pre-computed to always sum to 100% per year
+// [2026, 2027, 2028, 2029] reversed to [2029, 2028, 2027, 2026]
+const pct = {
+  hw_b2c:   [45, 49, 58, 72],
+  mktplace: [14, 11,  6,  1],
+  b2b_hw:   [31, 31, 29, 24],
+  b2b_sub:  [10,  9,  7,  3],
+};
+const totalsR = [68524, 22955, 8078, 3030];
+const streamsR = {
+  hw_b2c:   [44406, 16287, 5953, 2173],
+  mktplace: [9801,  2529,   466,   24],
+  b2b_hw:   [21183, 7061,  2354,  714],
+  b2b_sub:  [6569,  2078,   581,   94],
+};
+
+new Chart(document.getElementById('cMix'), {
+  type: 'bar',
+  data: {
+    labels: ['2029', '2028', '2027', '2026'],
+    datasets: [
+      { label: 'Hardware B2C', data: pct.hw_b2c, backgroundColor: '#1D9E75', borderRadius: 0, borderSkipped: false, stack: 'mix' },
+      { label: 'In-App Marketplace', data: pct.mktplace, backgroundColor: '#9FE1CB', borderRadius: 0, borderSkipped: false, stack: 'mix' },
+      { label: 'B2B Hardware', data: pct.b2b_hw, backgroundColor: '#EF9F27', borderRadius: 0, borderSkipped: false, stack: 'mix' },
+      { label: 'B2B Subscription', data: pct.b2b_sub, backgroundColor: '#FAC775', borderRadius: 0, borderSkipped: false, stack: 'mix' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => {
+            const raw = streamsR[['hw_b2c','mktplace','b2b_hw','b2b_sub'][c.datasetIndex]][c.dataIndex];
+            const pct = c.raw;
+            return c.dataset.label + ': ' + pct + '% (€' + (raw >= 1000 ? (raw/1000).toFixed(1)+'M' : raw+'k') + ')';
+          },
+          footer: items => 'Total: €' + (totalsR[items[0].dataIndex]/1000).toFixed(1) + 'M'
+        },
+        backgroundColor: '#1a1a1a', titleColor: '#fff', bodyColor: '#ccc', footerColor: '#fff', padding: 12, cornerRadius: 6
+      }
+    },
+    scales: {
+      x: {
+        stacked: true,
+        min: 0, max: 100,
+        ticks: { callback: v => v + '%', font: { size: 10, family: 'DM Mono' }, color: '#9a9a9a' },
+        grid: { color: 'rgba(0,0,0,0.05)' }, border: { display: false }
+      },
+      y: {
+        stacked: true,
+        ticks: { font: { size: 13, family: 'DM Mono' }, color: '#9a9a9a' },
+        grid: { display: false }, border: { display: false }
+      }
+    }
+  }
+});
+</script>
+
+</div>
+
+</div>
+</div>
+</body>
+</html>
